@@ -81,9 +81,7 @@ class Cart(object):
     
     @property
     def coupon(self):
-        if self.coupon_id:
-            return Coupon.objects.get(id=self.coupon_id)
-        return None
+        return Coupon.objects.get(id=self.coupon_id) if self.coupon_id else None
 
     def get_discount(self):
         if self.coupon:
