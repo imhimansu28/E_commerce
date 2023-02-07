@@ -7,20 +7,23 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 def order_detail(obj):
-    return mark_safe('<a href="{}">View</a>'.format(
-        reverse('orders:admin_order_detail', args=[obj.id])))
+    return mark_safe(
+        f"""<a href="{reverse('orders:admin_order_detail', args=[obj.id])}">View</a>"""
+    )
 
  
 def export_to_csv(modeladmin, request, queryset): 
-    opts = modeladmin.model._meta 
-    response = HttpResponse(content_type='text/csv') 
-    response['Content-Disposition'] = 'attachment;' \
-        'filename={}.csv'.format(opts.verbose_name) 
+    opts = modeladmin.model._meta
+    response = HttpResponse(content_type='text/csv')
+    response[
+        'Content-Disposition'
+    ] = f'attachment;filename={opts.verbose_name}.csv'
+
     writer = csv.writer(response) 
-     
-    fields = [field for field in opts.get_fields() if not field.many_to_many and not field.one_to_many] 
+
+    fields = [field for field in opts.get_fields() if not field.many_to_many and not field.one_to_many]
     # Write a first row with header information 
-    writer.writerow([field.verbose_name for field in fields]) 
+    writer.writerow([field.verbose_name for field in fields])
     # Write data rows 
     for obj in queryset: 
         data_row = [] 
@@ -29,7 +32,7 @@ def export_to_csv(modeladmin, request, queryset):
             if isinstance(value, datetime.datetime): 
                 value = value.strftime('%d/%m/%Y') 
             data_row.append(value) 
-        writer.writerow(data_row) 
+        writer.writerow(data_row)
     return response 
 export_to_csv.short_description = 'Export to CSV' 
 
@@ -40,8 +43,9 @@ class OrderItemInline(admin.TabularInline):
 
 
 def order_pdf(obj):
-    return mark_safe('<a href="{}">PDF</a>'.format(
-        reverse('orders:admin_order_pdf', args=[obj.id])))
+    return mark_safe(
+        f"""<a href="{reverse('orders:admin_order_pdf', args=[obj.id])}">PDF</a>"""
+    )
 order_pdf.short_description = 'Invoice'
 
 

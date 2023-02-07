@@ -29,7 +29,7 @@ class Order(models.Model):
         ordering = ('-created',)
 
     def __str__(self):
-        return 'Order {}'.format(self.id)
+        return f'Order {self.id}'
 
     def get_total_cost(self):
         total_cots =  sum(item.get_cost() for item in self.items.all())
@@ -47,7 +47,7 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self):
-        return '{}'.format(self.id)
+        return f'{self.id}'
 
     def get_cost(self):
         return self.price * self.quantity

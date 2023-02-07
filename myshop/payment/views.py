@@ -22,37 +22,33 @@ def payment_process(request):
                 'submit_for_settlement': True
             }
         })
-        if result.is_success:
-            # mark the order as paid
-            order.paid = True
-            # store the unique transaction id
-            order.braintree_id = result.transaction.id
-            order.save()
+        if not result.is_success:
+            return redirect('payment:canceled')
+        # store the unique transaction id
+        order.braintree_id = result.transaction.id
+        order.paid = True
+        order.save()
 
             # create invoice e-mail
-            subject = 'My Shop - Invoice no. {}'.format(order.id)
-            message = 'Please, find attached the invoice for your recent purchase.'
-            email = EmailMessage(subject,
-                                 message,
-                                 'admin@myshop.com',
-                                 [order.email])
+        subject = f'My Shop - Invoice no. {order.id}'
+        message = 'Please, find attached the invoice for your recent purchase.'
+        email = EmailMessage(subject,
+                             message,
+                             'admin@myshop.com',
+                             [order.email])
 
-            # generate PDF
-            html = render_to_string('orders/order/pdf.html', {'order': order})
-            out = BytesIO()
-            stylesheets=[weasyprint.CSS(settings.STATIC_ROOT +'css/pdf.css')]
-            weasyprint.HTML(string=html).write_pdf(out,
-                                                   stylesheets=stylesheets)
+        # generate PDF
+        html = render_to_string('orders/order/pdf.html', {'order': order})
+        out = BytesIO()
+        stylesheets = [weasyprint.CSS(f'{settings.STATIC_ROOT}css/pdf.css')]
+        weasyprint.HTML(string=html).write_pdf(out,
+                                               stylesheets=stylesheets)
             # attach PDF file
-            email.attach('order_{}.pdf'.format(order.id),
-                         out.getvalue(),
-                         'application/pdf')
-            # send e-mail
-            email.send()
+        email.attach(f'order_{order.id}.pdf', out.getvalue(), 'application/pdf')
+        # send e-mail
+        email.send()
 
-            return redirect('payment:done')
-        else:
-            return redirect('payment:canceled')
+        return redirect('payment:done')
     else:
         # generate token 
         client_token = braintree.ClientToken.generate()
